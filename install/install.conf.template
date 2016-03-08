@@ -15,7 +15,7 @@ export PACKAGE_INSTALLER=chef
 export REMI=http://rpms.famillecollet.com/enterprise/remi-release-6.rpm
 
 # service NIC (A bridge "installation" is used for jenkins CI)
-export NIC=virbr0
+export NIC=eth1
 
 # default local repo config is "n"
 export LOCAL_REPO=${LOCAL_REPO:-"y"}
