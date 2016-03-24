@@ -8,7 +8,7 @@ export SWITCH_IPS="1.1.1.1"
 export SWITCH_VERSION=${SWITCH_VERSION:-'2c'}
 export SWITCH_COMMUNITY=${SWITCH_COMMUNITY:-'public'}
 export SWITCH_CREDENTIAL=${SWITCH_CREDENTIAL:-"version=${SWITCH_VERSION},community=${SWITCH_COMMUNITY}"}
-export DEPLOYMENT_TIMEOUT="15000000"
+export DEPLOYMENT_TIMEOUT="150"
 export POLL_SWITCHES_FLAG="nopoll_switches"
 
 export USE_POLL_SWITCHES=${USE_POLL_SWITCHES:-false}
@@ -39,12 +39,12 @@ export SUBNETS="10.1.0.0/24,172.16.2.0/24,172.16.3.0/24,172.16.4.0/24"
 
 export MANAGEMENT_IP_START=${MANAGEMENT_IP_START:-'10.1.0.50'}
 export MANAGEMENT_INTERFACE=${MANAGEMENT_INTERFACE:-'br_install'}
-export DASHBOARD_URL=""
+export DASHBOARD_URL="10.145.81.189/horizon"
 export ENABLE_SECGROUP=${ENABLE_SECGROUP:-"true"}
 export ENABLE_VPNAAS="false"
 export ENABLE_FWAAS="false"
-export NEUTRON_CFG="/root/compass4nfv/deploy/conf/neutron_cfg.yaml"
-export NETWORK_CFG=/root/compass4nfv/deploy/conf/network_cfg.yaml 
+export NEUTRON_CFG="/opt/compass/bin/conf/neutron_cfg.yaml"
+export NETWORK_CFG=/opt/compass/bin/conf/network_cfg.yaml 
 export HOSTNAMES="host1,host2,host3,host4,host5,"
 export HOST_ROLES="host1=controller,ha;host2=controller,ha;host3=controller,ha;host4=compute;host5=compute"
 function next_ip {

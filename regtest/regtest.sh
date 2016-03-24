@@ -36,7 +36,9 @@ REGTEST_CONF=${REGTEST_CONF:-"regtest.conf21"}
 REGTEST_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cp ${REGTEST_DIR}/../compass/apiclient/restful.py /opt/compass/bin/
 cp ${REGTEST_DIR}/log.py /opt/compass/bin/
-#cp ~/compass-core/compass/apiclient/restful.py /opt/compass/bin/
+sudo mkdir -p /opt/compass/bin/conf
+cp -rf ${REGTEST_DIR}/conf/network_cfg.yaml /opt/compass/bin/conf
+cp -rf ${REGTEST_DIR}/conf/neutron_cfg.yaml /opt/compass/bin/conf
 #source ${REGTEST_DIR}/regtest.conf
 source ${REGTEST_DIR}/${REGTEST_CONF}
 export OS_VERSION=${OS_VERSION:-"trusty"}
@@ -196,8 +198,8 @@ ${CLIENT_SCRIPT} --compass_server="${COMPASS_SERVER_URL}" --compass_user_email="
 
 
 
-#rc=$?
-#deactivate
+rc=$?
+deactivate
 # Tear down machines after the test
 if [[ $rc != 0 ]]; then
   #  tear_down_machines
