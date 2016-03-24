@@ -31,19 +31,28 @@ function tear_down_machines() {
         fi
     done
 }
-
-REGTEST_CONF=${REGTEST_CONF:-"regtest.conf"}
+ 
+REGTEST_CONF=${REGTEST_CONF:-"regtest.conf21"}
 REGTEST_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cp ${REGTEST_DIR}/../compass/apiclient/restful.py /opt/compass/bin/
+cp ${REGTEST_DIR}/log.py /opt/compass/bin/
+#cp ~/compass-core/compass/apiclient/restful.py /opt/compass/bin/
+#source ${REGTEST_DIR}/regtest.conf
 source ${REGTEST_DIR}/${REGTEST_CONF}
+export OS_VERSION=${OS_VERSION:-"trusty"}
+export ADAPTER_OS_PATTERN=${ADAPTER_OS_PATTERN:-'(?i)ubuntu-14\.04\.3.*'}
+export OPENSTACK_VERSION=${OPENSTACK_VERSION:-"liberty"}
+export ADAPTER_TARGET_SYSTEM_PATTERN="^openstack$"
+
 source `which virtualenvwrapper.sh`
 workon compass-core
 
 machines=''
-
 tear_down_machines
 
 echo "setup $VIRT_NUM virt machines"
 rm -rf /tmp/pxe*.raw
+line=1
 for i in `seq $VIRT_NUM`; do
     if [[ ! -e /home/pxe${i}.raw ]]; then
         echo "create image for instance pxe$i"
@@ -62,19 +71,22 @@ for i in `seq $VIRT_NUM`; do
         fi 
     fi
     mac=$(mac_address)
+    line=$((i*5+1))
+ echo '====line number is'$line
+#    sed -n -i '${line}p' /etc/compass/machine_list/machine_list.conf
+#    sed -i -e "${line}s#.*#'mac': '${mac}',#" /etc/compass/machine_list/machine_list.conf
     echo "virt-install instance pxe$i on mac ${mac}"
     virt-install --accelerate --hvm --connect qemu:///system \
-        --network=bridge:installation,mac=${mac} --pxe \
-        --network=bridge:installation \
-        --network=bridge:installation \
-        --network=bridge:installation \
+        --network=bridge:br_install,mac=${mac} --pxe \
+        --network=bridge:br0 \
         --name pxe${i} --ram=${VIRT_MEM} \
         --disk /home/pxe${i}.raw,format=raw \
         --vcpus=${VIRT_CPUS} \
         --graphics vnc,listen=0.0.0.0 \
+        --boot network,hd \
         --noautoconsole \
         --autostart \
-        --os-type=linux --os-variant=rhel6
+        --os-type=linux --os-variant=rhel7
     if [[ "$?" != "0" ]]; then
         echo "install instance pxe${i} failed"
         exit 1
@@ -95,7 +107,7 @@ for i in `seq $VIRT_NUM`; do
     fi
 
     echo "make pxe${i} reboot if installation failing."
-    sed -i "/<boot dev='hd'\/>/ a\    <bios useserial='yes' rebootTimeout='0'\/>" /etc/libvirt/qemu/pxe${i}.xml
+    sed -i "/<boot dev='network'\/>/ a\    <bios useserial='yes' rebootTimeout='0'\/>" /etc/libvirt/qemu/pxe${i}.xml
     virsh define /etc/libvirt/qemu/pxe${i}.xml
     virsh dumpxml pxe${i} | grep "<bios useserial='yes' rebootTimeout='0'\/>"
     if [[ "$?" != "0" ]]; then
@@ -121,8 +133,8 @@ done
 
 echo "machines: $machines"
 virsh list
-
-# Avoid infinite relative symbolic links
+export machines
+ #Avoid infinite relative symbolic links
 if [[ ! -L cobbler_logs ]]; then
     ln -s /var/log/cobbler/anamon cobbler_logs
 fi
@@ -147,6 +159,7 @@ else
     /opt/compass/bin/clean_environments.sh
     /opt/compass/bin/remove_systems.sh
 fi
+chmod -R 0755 /var/lib/dhcpd
 
 if [[ "$USE_POLL_SWITCHES" == "0" || "$USE_POLL_SWITCHES" == "false" ]]; then
     POLL_SWITCHES_FLAG="nopoll_switches"
@@ -177,12 +190,20 @@ if [ -n "$LOCAL_REPO_URL" ]; then
     PROXY=
 fi
 
-${CLIENT_SCRIPT} --logfile= --loglevel=debug --logdir= --compass_server="${COMPASS_SERVER_URL}" --compass_user_email="${COMPASS_USER_EMAIL}" --compass_user_password="${COMPASS_USER_PASSWORD}" --cluster_name="${CLUSTER_NAME}" --language="${LANGUAGE}" --timezone="${TIMEZONE}" --hostnames="${HOSTNAMES}" --partitions="${PARTITIONS}" --subnets="${SUBNETS}" --adapter_os_pattern="${ADAPTER_OS_PATTERN}" --adapter_name="${ADAPTER_NAME}" --adapter_flavor_pattern="${ADAPTER_FLAVOR_PATTERN}" --http_proxy="${PROXY}" --https_proxy="${PROXY}" --no_proxy="${IGNORE_PROXY}" --ntp_server="${NTP_SERVER}" --dns_servers="${NAMESERVERS}" --domain="${DOMAIN}" --search_path="${SEARCH_PATH}" --default_gateway="${GATEWAY}" --server_credential="${SERVER_CREDENTIAL}" --local_repo_url="${LOCAL_REPO_URL}" --os_config_json_file="${OS_CONFIG_FILENAME}" --service_credentials="${SERVICE_CREDENTIALS}" --console_credentials="${CONSOLE_CREDENTIALS}" --host_networks="${HOST_NETWORKS}" --network_mapping="${NETWORK_MAPPING}" --package_config_json_file="${PACKAGE_CONFIG_FILENAME}" --host_roles="${HOST_ROLES}" --default_roles="${DEFAULT_ROLES}" --switch_ips="${SWITCH_IPS}" --machines="${machines}" --switch_credential="${SWITCH_CREDENTIAL}" --deployment_timeout="${DEPLOYMENT_TIMEOUT}" --${POLL_SWITCHES_FLAG} --dashboard_url="${DASHBOARD_URL}"
-rc=$?
-deactivate
+${CLIENT_SCRIPT} --compass_server="${COMPASS_SERVER_URL}" --compass_user_email="${COMPASS_USER_EMAIL}" --compass_user_password="${COMPASS_USER_PASSWORD}" --repo_name="${REPO_NAME}" --cluster_name="${CLUSTER_NAME}" --language="${LANGUAGE}" --timezone="${TIMEZONE}" --hostnames="${HOSTNAMES}" --partitions="${PARTITIONS}" --subnets="${SUBNETS}" --adapter_target_system_pattern="${ADAPTER_TARGET_SYSTEM_PATTERN}" --adapter_os_pattern="${ADAPTER_OS_PATTERN}" --adapter_name="${ADAPTER_NAME}" --adapter_flavor_pattern="${ADAPTER_FLAVOR_PATTERN}" --http_proxy="${PROXY}" --https_proxy="${PROXY}" --no_proxy="${IGNORE_PROXY}" --cluster_vip="${VIP}" --ntp_server="${NTP_SERVER}" --dns_servers="${NAMESERVERS}" --domain="${DOMAIN}" --search_path="${SEARCH_PATH}" --default_gateway="${GATEWAY}" --server_credential="${SERVER_CREDENTIAL}" --local_repo_url="${LOCAL_REPO_URL}" --os_config_json_file="${OS_CONFIG_FILENAME}" --service_credentials="${SERVICE_CREDENTIALS}" --console_credentials="${CONSOLE_CREDENTIALS}" --host_networks="${HOST_NETWORKS}" --network_mapping="${NETWORK_MAPPING}" --package_config_json_file="${PACKAGE_CONFIG_FILENAME}" --host_roles="${HOST_ROLES}" --default_roles="${DEFAULT_ROLES}" --switch_ips="${SWITCH_IPS}" --machines="${machines}" --switch_credential="${SWITCH_CREDENTIAL}" --deployment_timeout="${DEPLOYMENT_TIMEOUT}" --${POLL_SWITCHES_FLAG} --dashboard_url="${DASHBOARD_URL}" --neutron_cfg="${NEUTRON_CFG}" --network_cfg="${NETWORK_CFG}"
+
+
+
+
+
+
+
+
+#rc=$?
+#deactivate
 # Tear down machines after the test
 if [[ $rc != 0 ]]; then
-    tear_down_machines
+  #  tear_down_machines
     echo "deployment failed"
     exit 1
 fi
