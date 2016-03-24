@@ -52,7 +52,7 @@ tear_down_machines
 
 echo "setup $VIRT_NUM virt machines"
 rm -rf /tmp/pxe*.raw
-line=1
+
 for i in `seq $VIRT_NUM`; do
     if [[ ! -e /home/pxe${i}.raw ]]; then
         echo "create image for instance pxe$i"
@@ -71,10 +71,7 @@ for i in `seq $VIRT_NUM`; do
         fi 
     fi
     mac=$(mac_address)
-    line=$((i*5+1))
- echo '====line number is'$line
-#    sed -n -i '${line}p' /etc/compass/machine_list/machine_list.conf
-#    sed -i -e "${line}s#.*#'mac': '${mac}',#" /etc/compass/machine_list/machine_list.conf
+
     echo "virt-install instance pxe$i on mac ${mac}"
     virt-install --accelerate --hvm --connect qemu:///system \
         --network=bridge:br_install,mac=${mac} --pxe \
