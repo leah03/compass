@@ -49,9 +49,9 @@ export NAMESERVER_REVERSE_ZONES=unused
 
 # the repo url
 export WEB_SOURCE='http://git.openstack.org/openstack/compass-web'
-export ADAPTERS_SOURCE='http://git.openstack.org/openstack/compass-adapters'
+#export ADAPTERS_SOURCE='http://git.openstack.org/openstack/compass-adapters'
 #export ADAPTERS_SOURCE='https://gerrit.opnfv.org/gerrit/compass4nfv'
-#export ADAPTERS_SOURCE='https://github.com/meticulous-dft/compass4nfv'
+export ADAPTERS_SOURCE='https://github.com/leah03/compass4nfv'
 # set the default cobbler user "cobbler" password, if not set, the default will be cobbler/cobbler
 export CBLR_USER=cobbler
 export CBLR_PASSWD=cobbler

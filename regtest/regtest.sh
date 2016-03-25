@@ -31,14 +31,19 @@ function tear_down_machines() {
         fi
     done
 }
- 
-REGTEST_CONF=${REGTEST_CONF:-"regtest.conf21"}
+if [ -z "$REGTEST_CONF" ];then
+    echo " use regtest.conf21"
+    REGTEST_CONF=${REGTEST_CONF:-"regtest.conf21"} 
+fi
+#REGTEST_CONF=${REGTEST_CONF:-"regtest.conf21"}
 REGTEST_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cp ${REGTEST_DIR}/../compass/apiclient/restful.py /opt/compass/bin/
 cp ${REGTEST_DIR}/log.py /opt/compass/bin/
+sudo cp -rf ${REGTEST_DIR}/client.py /opt/compass/bin/client.py
 sudo mkdir -p /opt/compass/bin/conf
 cp -rf ${REGTEST_DIR}/conf/network_cfg.yaml /opt/compass/bin/conf
 cp -rf ${REGTEST_DIR}/conf/neutron_cfg.yaml /opt/compass/bin/conf
+chmod -R 755 /opt/compass/bin
 #source ${REGTEST_DIR}/regtest.conf
 source ${REGTEST_DIR}/${REGTEST_CONF}
 export OS_VERSION=${OS_VERSION:-"trusty"}
@@ -158,7 +163,7 @@ else
     /opt/compass/bin/clean_environments.sh
     /opt/compass/bin/remove_systems.sh
 fi
-chmod -R 0755 /var/lib/dhcpd
+
 
 if [[ "$USE_POLL_SWITCHES" == "0" || "$USE_POLL_SWITCHES" == "false" ]]; then
     POLL_SWITCHES_FLAG="nopoll_switches"
