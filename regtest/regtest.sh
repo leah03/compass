@@ -35,7 +35,7 @@ if [ -z "$REGTEST_CONF" ];then
     echo " use regtest.conf21"
     REGTEST_CONF=${REGTEST_CONF:-"regtest.conf21"} 
 fi
-#REGTEST_CONF=${REGTEST_CONF:-"regtest.conf21"}
+
 REGTEST_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cp ${REGTEST_DIR}/../compass/apiclient/restful.py /opt/compass/bin/
 cp ${REGTEST_DIR}/log.py /opt/compass/bin/
@@ -44,13 +44,7 @@ sudo mkdir -p /opt/compass/bin/conf
 cp -rf ${REGTEST_DIR}/conf/network_cfg.yaml /opt/compass/bin/conf
 cp -rf ${REGTEST_DIR}/conf/neutron_cfg.yaml /opt/compass/bin/conf
 chmod -R 755 /opt/compass/bin
-#source ${REGTEST_DIR}/regtest.conf
 source ${REGTEST_DIR}/${REGTEST_CONF}
-export OS_VERSION=${OS_VERSION:-"trusty"}
-export ADAPTER_OS_PATTERN=${ADAPTER_OS_PATTERN:-'(?i)ubuntu-14\.04\.3.*'}
-export OPENSTACK_VERSION=${OPENSTACK_VERSION:-"liberty"}
-export ADAPTER_TARGET_SYSTEM_PATTERN="^openstack$"
-
 source `which virtualenvwrapper.sh`
 workon compass-core
 
@@ -137,7 +131,7 @@ done
 
 echo "machines: $machines"
 virsh list
-export machines
+
  #Avoid infinite relative symbolic links
 if [[ ! -L cobbler_logs ]]; then
     ln -s /var/log/cobbler/anamon cobbler_logs
@@ -207,16 +201,16 @@ rc=$?
 deactivate
 # Tear down machines after the test
 if [[ $rc != 0 ]]; then
-  #  tear_down_machines
+    tear_down_machines
     echo "deployment failed"
     exit 1
 fi
-if [[ $tempest == true ]] && [[ $ADAPTER_NAME != os_only ]]; then
-    ./tempest_run.sh
-    if [[ $? != 0 ]]; then
-        tear_down_machines
-        echo "tempest failed"
-        exit 1
-    fi
-fi
+#if [[ $tempest == true ]] && [[ $ADAPTER_NAME != os_only ]]; then
+#    ./tempest_run.sh
+#    if [[ $? != 0 ]]; then
+#        tear_down_machines
+#        echo "tempest failed"
+#        exit 1
+#    fi
+#fi
 tear_down_machines
